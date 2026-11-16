@@ -43,11 +43,12 @@ Developed specifically for campus environments (with built-in `@thapar.edu` doma
 ## 🏗️ Project Architecture
 
 ```
-Cloud-Car-Parking-System--Java/
-├── src/
-│   ├── main/
-│   │   ├── java/com/cloudparking/parking/backend/
-│   │   │   ├── config/            # DataInitializer (auto-seeds accounts & slots)
+Cloud-Car-Parking-System-/
+├── backend/                       # Spring Boot REST API Service
+│   ├── .mvn/wrapper/              # Maven Wrapper files
+│   ├── src/
+│   │   ├── main/java/com/cloudparking/parking/backend/
+│   │   │   ├── config/            # DataInitializer (seeds campus slots & demo accounts)
 │   │   │   ├── controller/        # REST APIs (Auth, Booking, Spaces, Lots, Analytics)
 │   │   │   ├── dto/               # Request/Response Data Transfer Objects
 │   │   │   ├── entity/            # JPA Entities (User, ParkingLot, ParkingSpace, Booking)
@@ -57,52 +58,55 @@ Cloud-Car-Parking-System--Java/
 │   │   │   ├── security/          # Spring Security, JWT Filter, CORS Config
 │   │   │   └── service/           # Business Logic (Auth, Booking, Analytics)
 │   │   └── resources/
-│   │       ├── application.yml    # Database & server configuration
-│   │       └── static/            # Top-Notch 3D Web Frontend
-│   │           ├── index.html     # Main HUD & 3D WebGL viewport
-│   │           ├── css/style.css  # Modern glassmorphism dark theme
-│   │           └── js/
-│   │               ├── api.js         # REST API client & auth token storage
-│   │               ├── parking3d.js   # Three.js 3D rendering engine & procedural cars
-│   │               ├── app.js         # Application state, filters, booking modals
-│   │               └── vendor/        # Local Three.js, OrbitControls, GSAP (offline-ready)
-│   └── test/
-└── pom.xml                        # Maven dependencies & build configuration
+│   │       ├── application.yml    # Database & server configuration (H2 & MySQL)
+│   │       └── static/            # Packaged UI (serves directly at :8080)
+│   ├── mvnw / mvnw.cmd            # Maven wrapper executables
+│   ├── pom.xml                    # Maven dependencies (Spring Boot 3.3.4, Java 21)
+│   └── README.md                  # Backend service documentation
+│
+├── frontend/                      # Standalone 3D Web Application
+│   ├── index.html                 # Main HUD & 3D WebGL viewport
+│   ├── css/
+│   │   └── style.css              # Glassmorphic dark cyber theme
+│   ├── js/
+│   │   ├── api.js                 # REST API client with CORS & JWT bearer tokens
+│   │   ├── parking3d.js           # Three.js 3D digital twin engine & procedural cars
+│   │   ├── app.js                 # Application state, 1-slot-per-person policy, modals
+│   │   └── vendor/                # Offline local Three.js, OrbitControls, GSAP
+│   └── README.md                  # Frontend development & launching guide
+│
+├── run-backend.bat                # Windows 1-click launcher for backend
+├── run-backend.sh                 # Linux/macOS launcher for backend
+├── Backend_Business_rules.md      # Approved system business rules
+└── README.md                      # Main project documentation
 ```
 
 ---
 
 ## 🚀 Quick Start Guide
 
-### 1. Prerequisites
-- **Java 21+** (Java 25 target configured)
-- **MySQL Server** (running locally on port 3306)
+### 1. Run the Backend
+You can launch the backend using the 1-click launcher or terminal:
 
-### 2. Configure MySQL Database
-Open your MySQL terminal or Workbench and create the database:
-```sql
-CREATE DATABASE cloud_parking_db;
+**Windows (1-Click):**
+Double-click `run-backend.bat` in the root folder, or run:
+```cmd
+cd backend
+mvnw.cmd spring-boot:run
 ```
 
-Update your MySQL root password in [`src/main/resources/application.yml`](src/main/resources/application.yml):
-```yaml
-spring:
-  datasource:
-    url: jdbc:mysql://localhost:3306/cloud_parking_db?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
-    username: root
-    password: YOUR_MYSQL_PASSWORD
-```
-
-### 3. Run the Application
-Open PowerShell or your terminal in this directory and run:
+**Linux / macOS:**
 ```bash
-./mvnw spring-boot:run
+chmod +x run-backend.sh
+./run-backend.sh
 ```
-*(Or use standard `mvn spring-boot:run`)*
 
-### 4. Open the 3D Web Application
-Once Spring Boot boots up, open your web browser:
-👉 **`http://localhost:8080/`**
+*(Zero setup required: Boots automatically using an in-memory MySQL-compatible H2 database. To use local MySQL instead, toggle the configuration in `backend/src/main/resources/application.yml`).*
+
+### 2. Open the 3D Web Application
+Once the backend is running, open the application in your browser:
+- **Direct Backend URL**: [http://localhost:8080/](http://localhost:8080/)
+- **Or Standalone Frontend**: Open `frontend/index.html` directly in your browser or with VS Code **Live Server** (it automatically connects to the backend at `http://localhost:8080/api`).
 
 ---
 

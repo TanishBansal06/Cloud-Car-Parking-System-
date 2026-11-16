@@ -3,9 +3,9 @@
  * Seamlessly interfaces with Spring Boot REST Backend
  */
 
-const API_BASE = window.location.port === '8080' || window.location.port === '' 
-    ? `${window.location.origin}/api` 
-    : 'http://localhost:8080/api';
+const API_BASE = (window.location.protocol === 'file:' || window.location.origin === 'null' || (window.location.port !== '8080' && window.location.port !== '')) 
+    ? 'http://localhost:8080/api' 
+    : `${window.location.origin}/api`;
 
 class ApiService {
     constructor() {
