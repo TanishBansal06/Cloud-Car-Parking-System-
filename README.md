@@ -101,12 +101,21 @@ chmod +x run-backend.sh
 ./run-backend.sh
 ```
 
-*(Zero setup required: Boots automatically using an in-memory MySQL-compatible H2 database. To use local MySQL instead, toggle the configuration in `backend/src/main/resources/application.yml`).*
+*(Zero setup required: Boots automatically with a persistent file-based MySQL-compatible database at `./backend/data/cloud_parking_db.mv.db`. All registered accounts and bookings are saved permanently across server restarts. To connect to an external MySQL instance or AWS RDS, see [AWS Deployment Guide](AWS_DEPLOYMENT_GUIDE.md)).*
 
 ### 2. Open the 3D Web Application
 Once the backend is running, open the application in your browser:
 - **Direct Backend URL**: [http://localhost:8080/](http://localhost:8080/)
 - **Or Standalone Frontend**: Open `frontend/index.html` directly in your browser or with VS Code **Live Server** (it automatically connects to the backend at `http://localhost:8080/api`).
+
+---
+
+## ☁️ AWS Cloud Deployment
+
+This project is fully ready for deployment on **AWS Free Tier** (AWS EC2 + optional AWS RDS MySQL).
+
+For complete step-by-step instructions (launching EC2, configuring Security Groups, installing Java 21, and running as an auto-restarting background service), see the comprehensive deployment guide:
+👉 **[Read the Full AWS Cloud Deployment Guide (AWS_DEPLOYMENT_GUIDE.md)](AWS_DEPLOYMENT_GUIDE.md)**
 
 ---
 
