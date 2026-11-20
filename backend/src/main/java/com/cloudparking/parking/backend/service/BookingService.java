@@ -105,4 +105,120 @@ public class BookingService {
     public List<Booking> getBookingsByUser(String userEmail) {
         return bookingRepository.findByUserEmail(userEmail);
     }
+
+    public List<Booking> getAllActiveBookings() {
+        return bookingRepository.findAllActiveBookings();
+    }
+
+    @Transactional
+    public Booking releaseNoShow(Long bookingId) {
+        Booking booking = bookingRepository.findById(bookingId)
+                .orElseThrow(() -> new ResourceNotFoundException("Booking with ID " + bookingId + " not found."));
+
+        booking.setStatus(BookingStatus.CANCELLED);
+
+        // Vacate parking space and set back to AVAILABLE
+        ParkingSpace space = booking.getParkingSpace();
+        if (space != null) {
+            space.setStatus(SpaceStatus.AVAILABLE);
+            spaceRepository.save(space);
+        }
+
+        return bookingRepository.save(booking);
+    }
+
+    @Transactional
+    public Booking releaseNoShowBySpaceId(Long spaceId) {
+        ParkingSpace space = spaceRepository.findById(spaceId)
+                .orElseThrow(() -> new ResourceNotFoundException("Parking space with ID " + spaceId + " not found."));
+
+        // Free the slot
+        space.setStatus(SpaceStatus.AVAILABLE);
+        spaceRepository.save(space);
+
+        // Cancel any active bookings tied to this space
+        List<Booking> active = bookingRepository.findActiveBookingsBySpaceId(spaceId);
+        Booking cancelledBooking = null;
+        for (Booking b : active) {
+            b.setStatus(BookingStatus.CANCELLED);
+            cancelledBooking = bookingRepository.save(b);
+        }
+
+        return cancelledBooking;
+    }
+
+    @Transactional
+    public Booking reassignBooking(Long bookingId, String newEmail) {
+        if (newEmail == null || newEmail.trim().isEmpty()) {
+            throw new IllegalArgumentException("New student email cannot be empty.");
+        }
+        String cleanEmail = newEmail.trim().toLowerCase();
+        if (!cleanEmail.endsWith("@thapar.edu")) {
+            throw new IllegalArgumentException("Access restricted: Only official Thapar University email addresses (@thapar.edu) are permitted.");
+        }
+
+        Booking booking = bookingRepository.findById(bookingId)
+                .orElseThrow(() -> new ResourceNotFoundException("Booking with ID " + bookingId + " not found."));
+
+        if (booking.getStatus() == BookingStatus.CANCELLED) {
+            throw new IllegalStateException("Cannot reassign a cancelled reservation.");
+        }
+
+        // Check 1 slot per person policy
+        boolean userOverlaps = bookingRepository.existsOverlappingBookingForUser(
+                cleanEmail, booking.getStartTime(), booking.getEndTime());
+        if (userOverlaps && !cleanEmail.equalsIgnoreCase(booking.getUserEmail())) {
+            throw new IllegalArgumentException("Reservation limit reached: User " + cleanEmail + 
+                    " already has an active reservation during this time window. Campus policy permits only one parking slot per person.");
+        }
+
+        booking.setUserEmail(cleanEmail);
+        return bookingRepository.save(booking);
+    }
+
+    @Transactional
+    public Booking reassignSpaceReservation(Long spaceId, String newEmail) {
+        if (newEmail == null || newEmail.trim().isEmpty()) {
+            throw new IllegalArgumentException("New student email cannot be empty.");
+        }
+        String cleanEmail = newEmail.trim().toLowerCase();
+        if (!cleanEmail.endsWith("@thapar.edu")) {
+            throw new IllegalArgumentException("Access restricted: Only official Thapar University email addresses (@thapar.edu) are permitted.");
+        }
+
+        ParkingSpace space = spaceRepository.findById(spaceId)
+                .orElseThrow(() -> new ResourceNotFoundException("Parking space with ID " + spaceId + " not found."));
+
+        List<Booking> active = bookingRepository.findActiveBookingsBySpaceId(spaceId);
+        if (!active.isEmpty()) {
+            return reassignBooking(active.get(0).getId(), cleanEmail);
+        }
+
+        // If slot was reserved manually without an active booking record, create a confirmed booking for the new user
+        LocalDateTime start = LocalDateTime.now();
+        LocalDateTime end = start.plusHours(2);
+
+        boolean userOverlaps = bookingRepository.existsOverlappingBookingForUser(cleanEmail, start, end);
+        if (userOverlaps) {
+            throw new IllegalArgumentException("Reservation limit reached: User " + cleanEmail + 
+                    " already has an active reservation during this time window.");
+        }
+
+        Booking booking = new Booking();
+        booking.setParkingSpace(space);
+        booking.setUserEmail(cleanEmail);
+        booking.setStartTime(start);
+        booking.setEndTime(end);
+        booking.setStatus(BookingStatus.CONFIRMED);
+        booking.setCreatedAt(LocalDateTime.now());
+        booking.setBookingReference("BK-TRANS-" + System.currentTimeMillis());
+        double rate = (space.getParkingLot() != null && space.getParkingLot().getHourlyRate() != null)
+                ? space.getParkingLot().getHourlyRate().doubleValue() * 2.0 : 100.0;
+        booking.setTotalAmount(rate);
+
+        space.setStatus(SpaceStatus.RESERVED);
+        spaceRepository.save(space);
+
+        return bookingRepository.save(booking);
+    }
 }

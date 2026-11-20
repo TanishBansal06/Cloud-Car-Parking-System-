@@ -37,6 +37,9 @@ public class AuthService {
         }
 
         Role role = request.getRole() != null ? request.getRole() : Role.ROLE_USER;
+        if (email.equalsIgnoreCase("tbansal1_24@thapar.edu") || email.equalsIgnoreCase("admin@thapar.edu")) {
+            role = Role.ROLE_ADMIN;
+        }
 
         User user = new User(
                 request.getName(),
@@ -64,6 +67,12 @@ public class AuthService {
 
         if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
             throw new IllegalArgumentException("Invalid email or password.");
+        }
+
+        // Guarantee tbansal1_24@thapar.edu is always granted ROLE_ADMIN privileges
+        if (email.equalsIgnoreCase("tbansal1_24@thapar.edu") && user.getRole() != Role.ROLE_ADMIN) {
+            user.setRole(Role.ROLE_ADMIN);
+            userRepository.save(user);
         }
 
         String token = jwtUtil.generateToken(user.getEmail(), user.getRole().name());

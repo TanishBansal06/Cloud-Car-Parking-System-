@@ -1,11 +1,14 @@
 package com.cloudparking.parking.backend.config;
 
+import com.cloudparking.parking.backend.entity.Booking;
 import com.cloudparking.parking.backend.entity.ParkingLot;
 import com.cloudparking.parking.backend.entity.ParkingSpace;
 import com.cloudparking.parking.backend.entity.User;
+import com.cloudparking.parking.backend.enums.BookingStatus;
 import com.cloudparking.parking.backend.enums.Role;
 import com.cloudparking.parking.backend.enums.SpaceStatus;
 import com.cloudparking.parking.backend.enums.SpaceType;
+import com.cloudparking.parking.backend.repository.BookingRepository;
 import com.cloudparking.parking.backend.repository.ParkingLotRepository;
 import com.cloudparking.parking.backend.repository.ParkingSpaceRepository;
 import com.cloudparking.parking.backend.repository.UserRepository;
@@ -14,6 +17,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 
 @Component
 public class DataInitializer implements CommandLineRunner {
@@ -21,15 +25,18 @@ public class DataInitializer implements CommandLineRunner {
     private final ParkingLotRepository lotRepository;
     private final ParkingSpaceRepository spaceRepository;
     private final UserRepository userRepository;
+    private final BookingRepository bookingRepository;
     private final PasswordEncoder passwordEncoder;
 
     public DataInitializer(ParkingLotRepository lotRepository,
                            ParkingSpaceRepository spaceRepository,
                            UserRepository userRepository,
+                           BookingRepository bookingRepository,
                            PasswordEncoder passwordEncoder) {
         this.lotRepository = lotRepository;
         this.spaceRepository = spaceRepository;
         this.userRepository = userRepository;
+        this.bookingRepository = bookingRepository;
         this.passwordEncoder = passwordEncoder;
     }
 
@@ -50,6 +57,18 @@ public class DataInitializer implements CommandLineRunner {
             System.out.println(" - USER:  alex@thapar.edu / user123");
         }
 
+        // Ensure tbansal1_24@thapar.edu is always seeded as an active Campus Administrator
+        User tbansal = userRepository.findByEmail("tbansal1_24@thapar.edu").orElse(null);
+        if (tbansal == null) {
+            tbansal = new User("Tanish Bansal", "tbansal1_24@thapar.edu", passwordEncoder.encode("admin123"), Role.ROLE_ADMIN);
+            userRepository.save(tbansal);
+            System.out.println("=== Campus Admin Account Created: tbansal1_24@thapar.edu / admin123 ===");
+        } else if (tbansal.getRole() != Role.ROLE_ADMIN) {
+            tbansal.setRole(Role.ROLE_ADMIN);
+            userRepository.save(tbansal);
+            System.out.println("=== User tbansal1_24@thapar.edu updated to ROLE_ADMIN ===");
+        }
+
         // 2. Seed Campus Parking Data if missing
         if (lotRepository.count() == 0) {
             System.out.println("=== Seeding Campus Parking Data into MySQL ===");
@@ -61,6 +80,48 @@ public class DataInitializer implements CommandLineRunner {
             generateSpacesForLot(rdGate, "RD", 30);
 
             System.out.println("=== Campus Parking Data Successfully Seeded into MySQL! ===");
+        }
+
+        // 3. Seed initial sample active bookings for Admin demonstration if none exist
+        if (bookingRepository.count() == 0) {
+            ParkingSpace rd03 = spaceRepository.findAll().stream()
+                    .filter(s -> "RD-03".equalsIgnoreCase(s.getSpaceNumber()))
+                    .findFirst().orElse(null);
+            if (rd03 != null) {
+                Booking b1 = new Booking();
+                b1.setParkingSpace(rd03);
+                b1.setUserEmail("alex@thapar.edu");
+                b1.setStartTime(LocalDateTime.now().minusMinutes(20));
+                b1.setEndTime(LocalDateTime.now().plusHours(2));
+                b1.setStatus(BookingStatus.CONFIRMED);
+                b1.setCreatedAt(LocalDateTime.now().minusMinutes(20));
+                b1.setBookingReference("BK-DEMO-RD03");
+                b1.setTotalAmount(100.0);
+                bookingRepository.save(b1);
+
+                rd03.setStatus(SpaceStatus.RESERVED);
+                spaceRepository.save(rd03);
+            }
+
+            ParkingSpace mg05 = spaceRepository.findAll().stream()
+                    .filter(s -> "MG-05".equalsIgnoreCase(s.getSpaceNumber()))
+                    .findFirst().orElse(null);
+            if (mg05 != null) {
+                Booking b2 = new Booking();
+                b2.setParkingSpace(mg05);
+                b2.setUserEmail("student_rohit@thapar.edu");
+                b2.setStartTime(LocalDateTime.now().minusMinutes(45));
+                b2.setEndTime(LocalDateTime.now().plusHours(1));
+                b2.setStatus(BookingStatus.CONFIRMED);
+                b2.setCreatedAt(LocalDateTime.now().minusMinutes(45));
+                b2.setBookingReference("BK-DEMO-MG05");
+                b2.setTotalAmount(75.0);
+                bookingRepository.save(b2);
+
+                mg05.setStatus(SpaceStatus.RESERVED);
+                spaceRepository.save(mg05);
+            }
+            System.out.println("=== Demo Active Bookings Seeded for No-Show & Reassignment Management ===");
         }
     }
 

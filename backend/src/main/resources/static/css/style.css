@@ -1018,6 +1018,97 @@ body {
     to { opacity: 1; transform: translateY(0); }
 }
 
+/* Admin Panel Specific Styling */
+.hud-btn.btn-admin {
+    background: rgba(124, 58, 237, 0.25) !important;
+    border-color: #8b5cf6 !important;
+    color: #ddd6fe !important;
+    font-weight: 600;
+}
+.hud-btn.btn-admin:hover {
+    background: rgba(124, 58, 237, 0.45) !important;
+    box-shadow: 0 0 16px rgba(139, 92, 246, 0.5) !important;
+}
+
+.table-action-btn {
+    background: rgba(30, 41, 59, 0.7);
+    border: 1px solid var(--border-glass);
+    color: var(--text-primary);
+    padding: 5px 9px;
+    border-radius: 6px;
+    font-size: 11px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+.table-action-btn:hover {
+    background: rgba(51, 65, 85, 0.95);
+    border-color: var(--primary);
+    transform: translateY(-1px);
+}
+.table-action-btn.active-avail {
+    border-color: var(--success);
+    background: rgba(16, 185, 129, 0.25);
+    color: var(--success);
+}
+.table-action-btn.active-occ {
+    border-color: var(--danger);
+    background: rgba(239, 68, 68, 0.25);
+    color: var(--danger);
+}
+.table-action-btn.active-res {
+    border-color: var(--warning);
+    background: rgba(245, 158, 11, 0.25);
+    color: var(--warning);
+}
+.table-action-btn.active-maint {
+    border-color: #94a3b8;
+    background: rgba(148, 163, 184, 0.25);
+    color: #cbd5e1;
+}
+.table-action-btn.btn-del {
+    background: rgba(239, 68, 68, 0.12);
+    border-color: rgba(239, 68, 68, 0.35);
+}
+.table-action-btn.btn-del:hover {
+    background: rgba(239, 68, 68, 0.35);
+    border-color: #ef4444;
+}
+
+.table-action-btn.btn-noshow {
+    background: rgba(239, 68, 68, 0.15);
+    border-color: rgba(239, 68, 68, 0.4);
+    color: #fca5a5;
+    font-size: 11px;
+    padding: 3px 8px;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}
+.table-action-btn.btn-noshow:hover {
+    background: rgba(239, 68, 68, 0.35);
+    border-color: #ef4444;
+    color: #fff;
+}
+
+.table-action-btn.btn-reassign {
+    background: rgba(139, 92, 246, 0.15);
+    border-color: rgba(139, 92, 246, 0.4);
+    color: #c4b5fd;
+    font-size: 11px;
+    padding: 3px 8px;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}
+.table-action-btn.btn-reassign:hover {
+    background: rgba(139, 92, 246, 0.35);
+    border-color: #8b5cf6;
+    color: #fff;
+}
+
 .hidden {
     display: none !important;
 }

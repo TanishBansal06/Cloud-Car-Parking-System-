@@ -6,6 +6,7 @@ import com.cloudparking.parking.backend.entity.ParkingSpace;
 import com.cloudparking.parking.backend.enums.SpaceStatus;
 import com.cloudparking.parking.backend.repository.ParkingLotRepository;
 import com.cloudparking.parking.backend.repository.ParkingSpaceRepository;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -51,5 +52,21 @@ public class ParkingSpaceController {
 
         ParkingSpace space = new ParkingSpace(request.getSpaceNumber(), request.getType(), SpaceStatus.AVAILABLE, lot);
         return spaceRepository.save(space);
+    }
+
+    // GET /api/spaces/all -> Returns all spaces across all campus lots (Admin)
+    @GetMapping("/all")
+    public List<ParkingSpace> getAllSpaces() {
+        return spaceRepository.findAll();
+    }
+
+    // DELETE /api/spaces/{spaceId} -> Deletes a space (Admin)
+    @DeleteMapping("/{spaceId}")
+    public ResponseEntity<Void> deleteSpace(@PathVariable Long spaceId) {
+        if (!spaceRepository.existsById(spaceId)) {
+            throw new IllegalArgumentException("Parking space not found with ID: " + spaceId);
+        }
+        spaceRepository.deleteById(spaceId);
+        return ResponseEntity.noContent().build();
     }
 }

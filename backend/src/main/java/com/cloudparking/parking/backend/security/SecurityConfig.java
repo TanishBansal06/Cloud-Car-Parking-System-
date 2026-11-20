@@ -65,7 +65,10 @@ public class SecurityConfig {
                 // Admin Only Endpoints
                 .requestMatchers(HttpMethod.POST, "/api/lots/**", "/api/spaces/**").hasAuthority("ROLE_ADMIN")
                 .requestMatchers(HttpMethod.PATCH, "/api/spaces/**").hasAuthority("ROLE_ADMIN")
+                .requestMatchers(HttpMethod.DELETE, "/api/spaces/**").hasAuthority("ROLE_ADMIN")
                 .requestMatchers("/api/analytics/**").hasAuthority("ROLE_ADMIN")
+                .requestMatchers(HttpMethod.GET, "/api/bookings/active").hasAuthority("ROLE_ADMIN")
+                .requestMatchers(HttpMethod.PUT, "/api/bookings/*/no-show", "/api/bookings/*/reassign", "/api/bookings/space/**").hasAuthority("ROLE_ADMIN")
                 
                 // User & Admin Endpoints
                 .requestMatchers("/api/bookings", "/api/bookings/**").hasAnyAuthority("ROLE_USER", "ROLE_ADMIN")

@@ -75,6 +75,9 @@ class ApiService {
             return data;
         } catch (error) {
             console.error(`API Error [${endpoint}]:`, error);
+            if (error.name === 'TypeError' && error.message && error.message.toLowerCase().includes('fetch')) {
+                throw new Error('Unable to connect to server on http://localhost:8080. If the backend is restarting, please wait a moment and try again.');
+            }
             throw error;
         }
     }
@@ -134,6 +137,16 @@ class ApiService {
         });
     }
 
+    async getAllSpaces() {
+        return await this.request('/spaces/all');
+    }
+
+    async deleteSpace(spaceId) {
+        return await this.request(`/spaces/${spaceId}`, {
+            method: 'DELETE'
+        });
+    }
+
     // Bookings
     async createBooking(spaceId, userEmail, startTime, endTime) {
         return await this.request('/bookings', {
@@ -155,6 +168,35 @@ class ApiService {
 
     async getUserBookings(email) {
         return await this.request(`/bookings?email=${encodeURIComponent(email)}`);
+    }
+
+    // Admin Booking & No-Show Controls
+    async getActiveBookings() {
+        return await this.request('/bookings/active');
+    }
+
+    async releaseNoShow(bookingId) {
+        return await this.request(`/bookings/${bookingId}/no-show`, {
+            method: 'PUT'
+        });
+    }
+
+    async releaseSpaceNoShow(spaceId) {
+        return await this.request(`/bookings/space/${spaceId}/release-noshow`, {
+            method: 'PUT'
+        });
+    }
+
+    async reassignBooking(bookingId, newEmail) {
+        return await this.request(`/bookings/${bookingId}/reassign?newEmail=${encodeURIComponent(newEmail)}`, {
+            method: 'PUT'
+        });
+    }
+
+    async reassignSpaceReservation(spaceId, newEmail) {
+        return await this.request(`/bookings/space/${spaceId}/reassign?newEmail=${encodeURIComponent(newEmail)}`, {
+            method: 'PUT'
+        });
     }
 
     // Analytics (Admin)

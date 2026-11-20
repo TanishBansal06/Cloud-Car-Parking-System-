@@ -50,4 +50,19 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
         @Param("lotId") Long lotId,
         @Param("statuses") List<BookingStatus> statuses
     );
+
+    @Query("""
+        SELECT b FROM Booking b
+        WHERE b.parkingSpace.id = :spaceId
+          AND b.status IN ('CONFIRMED', 'ACTIVE')
+        ORDER BY b.createdAt DESC
+    """)
+    List<Booking> findActiveBookingsBySpaceId(@Param("spaceId") Long spaceId);
+
+    @Query("""
+        SELECT b FROM Booking b
+        WHERE b.status IN ('CONFIRMED', 'ACTIVE')
+        ORDER BY b.createdAt DESC
+    """)
+    List<Booking> findAllActiveBookings();
 }

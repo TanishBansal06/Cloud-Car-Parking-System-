@@ -77,17 +77,20 @@
 
                 <!-- Authenticated Menu -->
                 <div id="nav-auth-group" class="hidden" style="display: flex; gap: 8px; align-items: center;">
+                    <button class="hud-btn hidden" id="nav-admin-panel-btn" style="background: rgba(139, 92, 246, 0.25); border-color: #8b5cf6; color: #ddd6fe;" title="Open Slot Management Admin Panel">
+                        <i class="fa-solid fa-shield-halved"></i> Admin Panel
+                    </button>
                     <button class="hud-btn" id="nav-my-bookings-btn">
                         <i class="fa-solid fa-ticket"></i> My Bookings
                     </button>
                     <button class="hud-btn hidden" id="nav-analytics-btn">
                         <i class="fa-solid fa-chart-pie"></i> Analytics
                     </button>
-                    <div class="user-badge-pill" id="nav-user-badge">
+                    <div class="user-badge-pill" id="nav-user-badge" style="cursor: pointer;" title="Signed in: Click to Log Out">
                         <!-- Populated dynamically -->
                     </div>
-                    <button class="hud-btn" id="nav-logout-btn" title="Sign Out">
-                        <i class="fa-solid fa-power-off"></i>
+                    <button class="hud-btn" id="nav-logout-btn" title="Sign Out of Campus Account" style="background: rgba(239, 68, 68, 0.2); border-color: rgba(239, 68, 68, 0.45); color: #fca5a5; display: inline-flex; align-items: center; gap: 6px; font-weight: 600;">
+                        <i class="fa-solid fa-right-from-bracket"></i> Logout
                     </button>
                 </div>
             </div>
@@ -291,11 +294,14 @@
             <div class="demo-accounts-box">
                 <span class="demo-title"><i class="fa-solid fa-wand-magic-sparkles"></i> 1-Click Demo Accounts</span>
                 <div class="demo-buttons-row">
-                    <button class="demo-btn" id="demo-student-btn" type="button">
-                        <i class="fa-solid fa-graduation-cap"></i> Student (Alex)
+                    <button class="demo-btn" id="demo-tbansal-btn" type="button" style="background: rgba(139, 92, 246, 0.2); border-color: rgba(139, 92, 246, 0.5);">
+                        <i class="fa-solid fa-user-shield" style="color: #a78bfa;"></i> Admin (Tanish)
                     </button>
                     <button class="demo-btn" id="demo-admin-btn" type="button">
                         <i class="fa-solid fa-user-shield"></i> Campus Admin
+                    </button>
+                    <button class="demo-btn" id="demo-student-btn" type="button">
+                        <i class="fa-solid fa-graduation-cap"></i> Student (Alex)
                     </button>
                 </div>
             </div>
@@ -346,7 +352,12 @@
                     <h3><i class="fa-solid fa-chart-line" style="color: var(--primary);"></i> Campus Parking Analytics</h3>
                     <span class="drawer-lot-name" id="analytics-lot-title">Main Gate Parking</span>
                 </div>
-                <button class="close-btn modal-close-btn"><i class="fa-solid fa-xmark"></i></button>
+                <div style="display: flex; gap: 8px; align-items: center;">
+                    <button type="button" class="hud-btn" id="analytics-logout-btn" style="background: rgba(239, 68, 68, 0.2); border-color: rgba(239, 68, 68, 0.45); color: #fca5a5; font-size: 12px; padding: 6px 12px; display: inline-flex; align-items: center; gap: 6px; font-weight: 600;" title="Sign Out">
+                        <i class="fa-solid fa-right-from-bracket"></i> Logout
+                    </button>
+                    <button class="close-btn modal-close-btn"><i class="fa-solid fa-xmark"></i></button>
+                </div>
             </div>
 
             <div class="analytics-grid">
@@ -389,6 +400,214 @@
                     <button type="submit" class="btn-primary" style="flex: 1; padding: 0 14px;">Add Slot</button>
                 </form>
             </div>
+        </div>
+    </div>
+
+    <!-- Modal: Dedicated Admin Control & Slot Management Panel -->
+    <div class="modal-overlay" id="admin-panel-modal">
+        <div class="modal-box glass" style="width: 920px; max-width: 95vw; max-height: 90vh;">
+            <div class="modal-header" style="border-bottom: 1px solid var(--border-glass); padding-bottom: 14px;">
+                <div>
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <span style="background: rgba(139, 92, 246, 0.25); color: #c4b5fd; padding: 4px 10px; border-radius: 6px; font-size: 13px; font-weight: 700; border: 1px solid rgba(139, 92, 246, 0.4);">
+                            <i class="fa-solid fa-shield-halved"></i> ADMIN CONTROL
+                        </span>
+                        <h3 style="margin: 0; font-size: 20px;">Parking Slot Management Panel</h3>
+                    </div>
+                    <span style="font-size: 12px; color: var(--text-muted); margin-top: 4px; display: block;" id="admin-panel-user-sub">
+                        Administrator: tbansal1_24@thapar.edu
+                    </span>
+                </div>
+                <div style="display: flex; gap: 8px; align-items: center;">
+                    <button type="button" class="hud-btn" id="admin-panel-logout-btn" style="background: rgba(239, 68, 68, 0.2); border-color: rgba(239, 68, 68, 0.45); color: #fca5a5; font-size: 12px; padding: 6px 12px; display: inline-flex; align-items: center; gap: 6px; font-weight: 600;" title="Sign Out of Admin Account">
+                        <i class="fa-solid fa-right-from-bracket"></i> Logout
+                    </button>
+                    <button class="close-btn modal-close-btn"><i class="fa-solid fa-xmark"></i></button>
+                </div>
+            </div>
+
+            <!-- Tab Switcher -->
+            <div style="display: flex; gap: 8px; border-bottom: 1px solid var(--border-glass); padding-bottom: 2px;">
+                <button id="admin-tab-slots-btn" type="button" class="hud-btn active" style="border-radius: 6px 6px 0 0; border-bottom: 2px solid var(--primary); font-weight: 700; color: #fff;">
+                    <i class="fa-solid fa-square-parking"></i> Slots Management
+                </button>
+                <button id="admin-tab-bookings-btn" type="button" class="hud-btn" style="border-radius: 6px 6px 0 0; color: var(--text-secondary);">
+                    <i class="fa-solid fa-calendar-check"></i> Active Reservations & No-Shows 
+                    <span id="admin-active-count-badge" style="background: rgba(239, 68, 68, 0.25); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.4); border-radius: 999px; padding: 1px 7px; font-size: 11px; margin-left: 4px;">0</span>
+                </button>
+            </div>
+
+            <!-- TAB 1: SLOTS MANAGEMENT -->
+            <div id="admin-tab-slots-view" style="display: flex; flex-direction: column; gap: 14px;">
+                <!-- Quick Add Space Bar -->
+                <div style="background: rgba(15, 23, 42, 0.7); border: 1px solid rgba(139, 92, 246, 0.3); padding: 14px 18px; border-radius: var(--radius-md);">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                        <span style="font-size: 13px; font-weight: 700; color: #e2e8f0; display: flex; align-items: center; gap: 8px;">
+                            <i class="fa-solid fa-plus-circle" style="color: #a78bfa;"></i> Add New Parking Space
+                        </span>
+                        <span style="font-size: 11px; color: var(--text-muted);">Instantly adds slot to live database and 3D digital twin</span>
+                    </div>
+                    <form id="panel-add-space-form" style="display: grid; grid-template-columns: 2fr 2fr 2fr 1.5fr; gap: 10px; align-items: center;">
+                        <select class="form-input" id="panel-new-lot" required>
+                            <!-- Populated dynamically with campus parking lots -->
+                        </select>
+                        <input type="text" class="form-input" id="panel-new-space-num" placeholder="Slot Number (e.g. RD-31)" required style="text-transform: uppercase;">
+                        <select class="form-input" id="panel-new-type">
+                            <option value="STANDARD">Standard Space</option>
+                            <option value="EV_CHARGING">⚡ EV Charging</option>
+                            <option value="COMPACT">🚙 Compact</option>
+                            <option value="HANDICAP">♿ VIP / Handicap</option>
+                        </select>
+                        <button type="submit" class="btn-primary" style="height: 42px; background: linear-gradient(135deg, #7c3aed, #9333ea); border: none;">
+                            <i class="fa-solid fa-plus"></i> Create Slot
+                        </button>
+                    </form>
+                </div>
+
+                <!-- Filter & Search Toolbar -->
+                <div style="display: flex; gap: 10px; align-items: center; justify-content: space-between; flex-wrap: wrap;">
+                    <div style="display: flex; gap: 8px; align-items: center; flex: 1; min-width: 260px;">
+                        <div class="search-box" style="flex: 1; margin: 0;">
+                            <i class="fa-solid fa-magnifying-glass"></i>
+                            <input type="text" id="admin-panel-search" placeholder="Search slot (e.g. RD-01 or MG-05)...">
+                        </div>
+                    </div>
+                    <div style="display: flex; gap: 8px; align-items: center;">
+                        <select class="form-input" id="admin-panel-lot-filter" style="width: auto; padding: 6px 12px; font-size: 12px;">
+                            <option value="ALL">All Parking Lots</option>
+                        </select>
+                        <select class="form-input" id="admin-panel-status-filter" style="width: auto; padding: 6px 12px; font-size: 12px;">
+                            <option value="ALL">All Statuses</option>
+                            <option value="AVAILABLE">🟢 Available Only</option>
+                            <option value="OCCUPIED">🔴 Occupied Only</option>
+                            <option value="RESERVED">🟡 Reserved Only</option>
+                            <option value="MAINTENANCE">⚪ Maintenance Only</option>
+                        </select>
+                        <button type="button" class="hud-btn" id="admin-panel-refresh-btn" title="Refresh Table">
+                            <i class="fa-solid fa-arrows-rotate"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Slots Management Table -->
+                <div style="max-height: 380px; overflow-y: auto; border-radius: var(--radius-md); border: 1px solid var(--border-glass); background: rgba(10, 15, 29, 0.6);">
+                    <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 13px;">
+                        <thead>
+                            <tr style="background: rgba(30, 41, 59, 0.85); position: sticky; top: 0; z-index: 2;">
+                                <th style="padding: 10px 14px; font-weight: 600; color: var(--text-muted);">Slot ID</th>
+                                <th style="padding: 10px 14px; font-weight: 600; color: var(--text-muted);">Parking Lot</th>
+                                <th style="padding: 10px 14px; font-weight: 600; color: var(--text-muted);">Space Type</th>
+                                <th style="padding: 10px 14px; font-weight: 600; color: var(--text-muted);">Status</th>
+                                <th style="padding: 10px 14px; font-weight: 600; color: var(--text-muted); text-align: center;">Actions & Overrides</th>
+                                <th style="padding: 10px 14px; font-weight: 600; color: var(--text-muted); text-align: right;">Delete</th>
+                            </tr>
+                        </thead>
+                        <tbody id="admin-slots-table-body">
+                            <!-- Populated dynamically -->
+                        </tbody>
+                    </table>
+                </div>
+
+                <div style="display: flex; justify-content: space-between; align-items: center; font-size: 12px; color: var(--text-muted); padding-top: 4px;">
+                    <span>Showing <strong id="admin-slot-count-filtered" style="color: var(--text-primary);">0</strong> slots</span>
+                    <span>Actions automatically synchronize with live 3D Three.js digital twin</span>
+                </div>
+            </div>
+
+            <!-- TAB 2: ACTIVE RESERVATIONS & NO-SHOW MANAGEMENT -->
+            <div id="admin-tab-bookings-view" class="hidden" style="display: flex; flex-direction: column; gap: 14px;">
+                <div style="background: rgba(239, 68, 68, 0.08); border: 1px solid rgba(239, 68, 68, 0.25); border-radius: var(--radius-md); padding: 12px 16px; font-size: 12.5px; color: #fecaca; display: flex; align-items: center; justify-content: space-between;">
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <i class="fa-solid fa-user-xmark" style="font-size: 18px; color: #ef4444;"></i>
+                        <div>
+                            <strong>No-Show & Reassignment Dispatcher:</strong>
+                            If a student has reserved a slot but failed to arrive, click <strong>Release No-Show</strong> to vacate the slot and remove the 3D car. Or click <strong>Reassign</strong> to transfer the slot to another @thapar.edu student.
+                        </div>
+                    </div>
+                    <button type="button" class="hud-btn" id="admin-refresh-bookings-btn" title="Refresh Active Bookings">
+                        <i class="fa-solid fa-arrows-rotate"></i>
+                    </button>
+                </div>
+
+                <div style="max-height: 420px; overflow-y: auto; border-radius: var(--radius-md); border: 1px solid var(--border-glass); background: rgba(10, 15, 29, 0.6);">
+                    <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 13px;">
+                        <thead>
+                            <tr style="background: rgba(30, 41, 59, 0.85); position: sticky; top: 0; z-index: 2;">
+                                <th style="padding: 10px 14px; font-weight: 600; color: var(--text-muted);">Slot #</th>
+                                <th style="padding: 10px 14px; font-weight: 600; color: var(--text-muted);">Parking Lot</th>
+                                <th style="padding: 10px 14px; font-weight: 600; color: var(--text-muted);">Student Email</th>
+                                <th style="padding: 10px 14px; font-weight: 600; color: var(--text-muted);">Reservation Time</th>
+                                <th style="padding: 10px 14px; font-weight: 600; color: var(--text-muted);">Ref & Status</th>
+                                <th style="padding: 10px 14px; font-weight: 600; color: var(--text-muted); text-align: right;">Admin Dispatch Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="admin-bookings-table-body">
+                            <!-- Populated dynamically -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: Reassign Reservation to Another Student -->
+    <div class="modal-overlay" id="admin-reassign-modal">
+        <div class="modal-box glass" style="max-width: 480px;">
+            <div class="modal-header" style="border-bottom: 1px solid var(--border-glass); padding-bottom: 12px; margin-bottom: 16px;">
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <div style="width: 38px; height: 38px; border-radius: 8px; background: rgba(139, 92, 246, 0.2); display: flex; align-items: center; justify-content: center; color: #a78bfa; font-size: 16px;">
+                        <i class="fa-solid fa-arrows-rotate"></i>
+                    </div>
+                    <div>
+                        <h3 style="margin: 0; font-size: 18px;">Reassign Reservation</h3>
+                        <span style="font-size: 12px; color: var(--text-muted);">Transfer slot to another Thapar student</span>
+                    </div>
+                </div>
+                <button class="close-btn modal-close-btn" id="reassign-close-btn"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+
+            <div style="background: rgba(15, 23, 42, 0.7); border: 1px solid var(--border-glass); border-radius: var(--radius-md); padding: 14px; margin-bottom: 16px;">
+                <div style="display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 13px;">
+                    <span style="color: var(--text-muted);">Target Slot:</span>
+                    <strong id="reassign-target-slot" style="color: var(--primary); font-family: var(--font-mono); font-size: 15px;">RD-01</strong>
+                </div>
+                <div style="display: flex; justify-content: space-between; font-size: 13px;">
+                    <span style="color: var(--text-muted);">Current Holder:</span>
+                    <span id="reassign-current-email" style="color: var(--text-primary); font-weight: 500;">alex@thapar.edu</span>
+                </div>
+            </div>
+
+            <form id="admin-reassign-form">
+                <input type="hidden" id="reassign-target-space-id">
+                <input type="hidden" id="reassign-target-booking-id">
+
+                <div class="form-group" style="margin-bottom: 12px;">
+                    <label class="form-label">New Student Thapar Email Address</label>
+                    <input type="email" class="form-input" id="reassign-new-email" placeholder="e.g. rahul@thapar.edu" required>
+                    <span style="font-size: 11px; color: var(--text-muted); margin-top: 4px; display: block;">
+                        Must be a registered or valid <code>@thapar.edu</code> university email.
+                    </span>
+                </div>
+
+                <!-- Quick suggestion chips -->
+                <div style="margin-bottom: 18px;">
+                    <span style="font-size: 11px; color: var(--text-muted); display: block; margin-bottom: 6px;">Quick Fill Suggestions:</span>
+                    <div style="display: flex; gap: 6px; flex-wrap: wrap;">
+                        <button type="button" class="hud-btn" style="padding: 3px 8px; font-size: 11px;" onclick="document.getElementById('reassign-new-email').value='student2@thapar.edu'">student2@thapar.edu</button>
+                        <button type="button" class="hud-btn" style="padding: 3px 8px; font-size: 11px;" onclick="document.getElementById('reassign-new-email').value='rahul@thapar.edu'">rahul@thapar.edu</button>
+                        <button type="button" class="hud-btn" style="padding: 3px 8px; font-size: 11px;" onclick="document.getElementById('reassign-new-email').value='alex@thapar.edu'">alex@thapar.edu</button>
+                    </div>
+                </div>
+
+                <div style="display: flex; gap: 10px; justify-content: flex-end;">
+                    <button type="button" class="hud-btn" id="reassign-cancel-btn">Cancel</button>
+                    <button type="submit" class="btn-primary" style="background: linear-gradient(135deg, #7c3aed, #9333ea);">
+                        <i class="fa-solid fa-check"></i> Transfer Reservation
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
         </div>
     </div>
 
