@@ -35,6 +35,17 @@ class CloudParkApp {
             await this.loadLots();
             await this.loadSpaces(this.currentLotId);
             this.showToast('Connected to CloudPark Backend', 'success');
+
+            // Periodic auto-sweep: updates spaces and removes cars whose reservation period has ended
+            setInterval(async () => {
+                if (this.currentLotId && !document.hidden) {
+                    try {
+                        await this.loadSpaces(this.currentLotId);
+                    } catch (e) {
+                        // ignore background sweep errors
+                    }
+                }
+            }, 15000);
         } catch (err) {
             console.error('Initialization error:', err);
             this.showToast('Backend offline or initializing - using mock campus data', 'warning');
@@ -678,11 +689,20 @@ class CloudParkApp {
                 return;
             }
 
-            listContainer.innerHTML = bookings.map(b => `
+            listContainer.innerHTML = bookings.map(b => {
+                const now = new Date();
+                const isPast = b.endTime ? new Date(b.endTime) <= now : false;
+                const displayStatus = (b.status === 'CONFIRMED' || b.status === 'ACTIVE') && isPast
+                    ? 'COMPLETED'
+                    : (b.status || 'CONFIRMED');
+                const canCancel = (b.status === 'CONFIRMED' || b.status === 'ACTIVE') && !isPast;
+                const statusClass = displayStatus.toLowerCase();
+
+                return `
                 <div class="booking-card">
                     <div class="booking-card-top">
                         <span class="booking-ref">${b.bookingReference}</span>
-                        <span class="status-badge ${b.status.toLowerCase()}">${b.status}</span>
+                        <span class="status-badge ${statusClass}">${displayStatus}</span>
                     </div>
                     <div class="booking-card-mid">
                         <div class="meta-item">
@@ -698,15 +718,20 @@ class CloudParkApp {
                             <span class="meta-val fee">₹${b.totalAmount}</span>
                         </div>
                     </div>
-                    ${(b.status === 'CONFIRMED' || b.status === 'ACTIVE') ? `
+                    ${canCancel ? `
                         <div class="booking-card-actions">
                             <button class="btn btn-outline-danger cancel-booking-btn" data-id="${b.id}">
                                 <i class="fa-solid fa-ban"></i> Cancel Reservation
                             </button>
                         </div>
-                    ` : ''}
+                    ` : `
+                        <div style="font-size: 11px; color: var(--text-muted); margin-top: 8px; text-align: right;">
+                            ${isPast ? '<i class="fa-solid fa-check-double" style="color: #38bdf8;"></i> Session Ended • Slot Released' : ''}
+                        </div>
+                    `}
                 </div>
-            `).join('');
+                `;
+            }).join('');
 
             listContainer.querySelectorAll('.cancel-booking-btn').forEach(btn => {
                 btn.addEventListener('click', async () => {
@@ -1103,6 +1128,18 @@ class CloudParkApp {
 
             // Refresh 3D digital twin & counters
             await this.loadSpaces(this.currentLotId);
+
+            // If made AVAILABLE or MAINTENANCE, refresh active bookings table in admin panel
+            if (newStatus === 'AVAILABLE' || newStatus === 'MAINTENANCE') {
+                try {
+                    this.adminActiveBookings = await api.getActiveBookings();
+                    const activeBadge = document.getElementById('admin-active-count-badge');
+                    if (activeBadge) activeBadge.textContent = this.adminActiveBookings.length;
+                    this.renderAdminBookingsTable();
+                } catch (e) {
+                    // ignore
+                }
+            }
         } catch (err) {
             this.showToast('Failed to update status: ' + err.message, 'error');
         }
@@ -1123,6 +1160,18 @@ class CloudParkApp {
 
             // Refresh 3D digital twin & counters
             await this.loadSpaces(this.currentLotId);
+
+            // If made AVAILABLE or MAINTENANCE, refresh active bookings table in admin panel
+            if (newStatus === 'AVAILABLE' || newStatus === 'MAINTENANCE') {
+                try {
+                    this.adminActiveBookings = await api.getActiveBookings();
+                    const activeBadge = document.getElementById('admin-active-count-badge');
+                    if (activeBadge) activeBadge.textContent = this.adminActiveBookings.length;
+                    this.renderAdminBookingsTable();
+                } catch (e) {
+                    // ignore
+                }
+            }
         } catch (err) {
             this.showToast('Failed to delete space: ' + err.message, 'error');
         }

@@ -65,4 +65,11 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
         ORDER BY b.createdAt DESC
     """)
     List<Booking> findAllActiveBookings();
+
+    @Query("""
+        SELECT b FROM Booking b
+        WHERE b.status IN ('CONFIRMED', 'ACTIVE')
+          AND b.endTime <= :now
+    """)
+    List<Booking> findExpiredActiveBookings(@Param("now") LocalDateTime now);
 }

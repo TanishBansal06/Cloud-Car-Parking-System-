@@ -8,6 +8,7 @@ import com.cloudparking.parking.backend.enums.SpaceStatus;
 import com.cloudparking.parking.backend.exception.ResourceNotFoundException;
 import com.cloudparking.parking.backend.repository.BookingRepository;
 import com.cloudparking.parking.backend.repository.ParkingSpaceRepository;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -28,6 +29,8 @@ public class BookingService {
 
     @Transactional
     public Booking createBooking(BookingRequest request) {
+        processExpiredBookings();
+
         if (request.getEndTime().isBefore(request.getStartTime()) || request.getEndTime().isEqual(request.getStartTime())) {
             throw new IllegalArgumentException("Booking end time must be strictly after start time.");
         }
@@ -102,11 +105,37 @@ public class BookingService {
         return bookingRepository.save(booking);
     }
 
+    @Scheduled(fixedRate = 10000)
+    @Transactional
+    public List<Booking> processExpiredBookings() {
+        LocalDateTime now = LocalDateTime.now();
+        List<Booking> expiredList = bookingRepository.findExpiredActiveBookings(now);
+        for (Booking booking : expiredList) {
+            booking.setStatus(BookingStatus.COMPLETED);
+            ParkingSpace space = booking.getParkingSpace();
+            if (space != null) {
+                // If the space is currently marked RESERVED, ensure no other ongoing active reservation holds it
+                if (space.getStatus() == SpaceStatus.RESERVED) {
+                    boolean hasOverlappingActive = bookingRepository.existsOverlappingBookingForSpace(
+                            space.getId(), now.minusMinutes(1), now.plusMinutes(1));
+                    if (!hasOverlappingActive) {
+                        space.setStatus(SpaceStatus.AVAILABLE);
+                        spaceRepository.save(space);
+                    }
+                }
+            }
+            bookingRepository.save(booking);
+        }
+        return expiredList;
+    }
+
     public List<Booking> getBookingsByUser(String userEmail) {
+        processExpiredBookings();
         return bookingRepository.findByUserEmail(userEmail);
     }
 
     public List<Booking> getAllActiveBookings() {
+        processExpiredBookings();
         return bookingRepository.findAllActiveBookings();
     }
 
